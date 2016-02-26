@@ -14,7 +14,7 @@ namespace FehBot
 		private Boolean run = true;
 		private RegistrationInfoFactory infoFactory = new RegistrationInfoFactory();
 		private IMongoDatabase db;
-		private List<IHandler> handlers = new List<IHandler>{new KarmaHandler()};
+		private List<IHandler> handlers = new List<IHandler>{new KarmaHandler(), new FactoidHandler()};
 
 		public static void Main (string[] args)
 		{
