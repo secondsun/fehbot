@@ -57,6 +57,12 @@
     <Reference Include="Itenso.TimePeriod">
       <HintPath>..\packages\TimePeriodLibrary.NET.2.0.0\lib\net35\Desktop.Release\Itenso.TimePeriod.dll</HintPath>
     </Reference>
+    <Reference Include="aerogear-windows-push">
+      <HintPath>..\packages\aerogear-windows-push.0.1.0\lib\portable-net45+win8+wp8+wpa81\aerogear-windows-push.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -68,12 +74,16 @@
     <Compile Include="Handlers\StatusHandler.cs" />
     <Compile Include="Handlers\TellHandler.cs" />
     <Compile Include="Handlers\HandlerUtils.cs" />
+    <Compile Include="REST\RESTServer.cs" />
+    <Compile Include="Handlers\AccountLinkHandler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="fhconfig.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Handlers\" />
+    <Folder Include="REST\" />
   </ItemGroup>
 </Project>

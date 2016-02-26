@@ -14,7 +14,7 @@ namespace FehBot
 		private Boolean run = true;
 		private RegistrationInfoFactory infoFactory = new RegistrationInfoFactory();
 		private IMongoDatabase db;
-		private List<IHandler> handlers = new List<IHandler>{new KarmaHandler(), new FactoidHandler(), new TellHandler()};
+		private List<IHandler> handlers = new List<IHandler>{new KarmaHandler(), new FactoidHandler(), new TellHandler(), new AccountLinkHandler()};
 
 		public static void Main (string[] args)
 		{
@@ -22,7 +22,9 @@ namespace FehBot
 			bot.Run ();
 		}
 
-		public void Run() {
+
+
+		public async void Run() {
 			StandardIrcClient client = new StandardIrcClient();
 
 			client.Connected += Connected;
@@ -31,6 +33,12 @@ namespace FehBot
 
 			var mongo = new MongoClient();
 			db = mongo.GetDatabase("fehBot");
+
+			RESTServer server = new RESTServer (db, 18080);
+
+			Thread serverThread = new Thread(server.StartListening);
+
+			serverThread.Start();
 
 			// Wait until connection has succeeded or timed out.
 			using (var connectedEvent = new ManualResetEventSlim(false))
@@ -99,7 +107,15 @@ namespace FehBot
 
 			if (e.Source is IrcUser) {
 				from =(IrcUser) e.Source;
-				handlers.ForEach ( handler => {handler.handle(infoFactory, client , this, db, from, channel ,e.Text);});
+
+					handlers.ForEach ( handler => {
+					try {
+						handler.handle(infoFactory, client , this, db, from, channel ,e.Text);
+					} catch (Exception ex) {
+						Console.WriteLine(ex);
+					}
+					});
+				
 			} 
 		}
 	}
