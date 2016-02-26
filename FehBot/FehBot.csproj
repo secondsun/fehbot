@@ -54,6 +54,9 @@
     <Reference Include="Unity">
       <HintPath>..\packages\Unity.4.0.2\lib\net45\Unity.dll</HintPath>
     </Reference>
+    <Reference Include="Itenso.TimePeriod">
+      <HintPath>..\packages\TimePeriodLibrary.NET.2.0.0\lib\net35\Desktop.Release\Itenso.TimePeriod.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -62,6 +65,9 @@
     <Compile Include="Handlers\KarmaHandler.cs" />
     <Compile Include="Handlers\IHandler.cs" />
     <Compile Include="Handlers\FactoidHandler.cs" />
+    <Compile Include="Handlers\StatusHandler.cs" />
+    <Compile Include="Handlers\TellHandler.cs" />
+    <Compile Include="Handlers\HandlerUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

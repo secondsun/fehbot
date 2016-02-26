@@ -57,7 +57,7 @@ namespace FehBot.Handlers
 				}
 
 			} else if (isFactoidStoreRequest(message, infoFactory.NickName)) {
-				message = removeMention (message, infoFactory.NickName);
+				message = HandlerUtils.removeMention (message, infoFactory.NickName);
 				var request = parseFactoidStoreRequest (message);
 				var term = request.Item1;
 				var definition = request.Item2;
@@ -84,7 +84,7 @@ namespace FehBot.Handlers
 
 
 			} else if (isFactoidRemoveRequest(message, infoFactory.NickName)) {
-				message = removeMention (message, infoFactory.NickName);
+				message = HandlerUtils.removeMention (message, infoFactory.NickName);
 				string term = parseFactoidRemoveRequest (message);
 
 				var factoid = db.GetCollection<BsonDocument>("factoid");
@@ -104,24 +104,15 @@ namespace FehBot.Handlers
 			} 
 		}
 
-		string removeMention (string message, string nickName)
-		{
-			return message.Substring (message.IndexOf (nickName) + nickName.Length + 1).Trim ();//remove mention
-		}
-
-		bool addressedToMe (string message, string nick)
-		{
-			return message.IndexOf(nick) == 0;
-		}
 
 		private bool isFactoidStoreRequest(string message, string nick) {
-			string noMention = removeMention (message, nick);
-			return FactoidStoreExpression.IsMatch (noMention) && addressedToMe(message, nick);
+			string noMention = HandlerUtils.removeMention (message, nick);
+			return FactoidStoreExpression.IsMatch (noMention) && HandlerUtils.addressedToMe(message, nick);
 		}
 
 		private bool isFactoidRemoveRequest(string message, string nick) {
-			string noMention = removeMention (message, nick);
-			return FactoidRemoveExpression.IsMatch (noMention) && addressedToMe(message, nick);
+			string noMention = HandlerUtils.removeMention (message, nick);
+			return FactoidRemoveExpression.IsMatch (noMention) && HandlerUtils.addressedToMe(message, nick);
 		}
 		private bool isFactoidGetRequest(string message) {
 			return FactoidGetExpression.IsMatch (message);
