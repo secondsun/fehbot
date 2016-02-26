@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace FehBot
 {
-	class FehBot
+	public class FehBot
 	{
 
 		private Boolean run = true;
@@ -32,7 +32,7 @@ namespace FehBot
 				var registrationInfo = infoFactory.Registration;
 
 				client.Connect(infoFactory.Server, false, registrationInfo);
-				if (!connectedEvent.Wait(100))
+				if (!connectedEvent.Wait(1000))
 				{
 					client.Dispose();
 					run = false;
