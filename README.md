@@ -5,6 +5,7 @@ This is a chat bot written in C# based on aerobot written by qmx.
 # Prerequisites  
 
 * Mono 2.5 (ish)  
+* Default configuration of MongoDB
 * ???
 
 # Usage
@@ -14,4 +15,4 @@ This is a chat bot written in C# based on aerobot written by qmx.
 #Libraries Used
 
 * IrcDotNet
-
+* Mongo Driver
