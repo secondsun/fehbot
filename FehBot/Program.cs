@@ -5,41 +5,33 @@ using System.Linq;
 
 namespace FehBot
 {
-	class MainClass
+	class FehBot
 	{
 
-
+		private Boolean run = true;
+		private RegistrationInfoFactory infoFactory = new RegistrationInfoFactory();
 
 		public static void Main (string[] args)
 		{
+			var bot = new FehBot ();
+			bot.Run ();
+		}
+
+		public void Run() {
 			StandardIrcClient client = new StandardIrcClient();
-			var run = true;
 
-			client.Connected += (object sender, EventArgs e) => {
-
-				client.LocalUser.JoinedChannel += (object ignore, IrcChannelEventArgs e2) => {
-					var channel = e2.Channel;
-					client.LocalUser.SendMessage(channel, "Hello World!");
-					client.Quit(2000, "Finished ");
-					run = false;
-					client.Dispose();
-				};
-
-
-				client.Channels.Join ("#aerobot-test");
-			};
+			client.Connected += Connected;
+			client.Registered += Registered;
+			client.Disconnected += Disconnected;
 
 			// Wait until connection has succeeded or timed out.
 			using (var connectedEvent = new ManualResetEventSlim(false))
 			{
 				client.Connected += (sender2, e2) => connectedEvent.Set();
 
-				var  registrationInfo = new IrcUserRegistrationInfo();
-				registrationInfo.NickName = "fehbot";
-				registrationInfo.UserName = "fehbot";
-				registrationInfo.RealName = "FeedHenry Chat Bot";
+				var registrationInfo = infoFactory.Registration;
 
-				client.Connect("irc.freenode.net", false, registrationInfo);
+				client.Connect(infoFactory.Server, false, registrationInfo);
 				if (!connectedEvent.Wait(100))
 				{
 					client.Dispose();
@@ -49,11 +41,39 @@ namespace FehBot
 				}
 			}
 
-
-
 			while (run) {
 				Console.WriteLine (client.Channels.Count);
 			}
+		}
+
+		private void Connected(object client, EventArgs e)
+		{
+			
+		}
+
+		private void Disconnected(object client, EventArgs e)
+		{
+			run = false;
+		}
+
+		private void Registered(object _client, EventArgs e)
+		{
+			var client = (IrcClient)_client;
+
+			client.LocalUser.JoinedChannel += JoinedChannel;
+
+			client.Channels.Join (infoFactory.Channels);
+		}
+
+		private void JoinedChannel (object _client, IrcChannelEventArgs e2) 
+		{
+			var client = e2.Channel.Client;
+			var channel = e2.Channel;
+
+			client.LocalUser.SendMessage(channel, "Hello World!");
+			client.Quit(2000, "Finished ");
+
+			client.Dispose();
 
 		}
 	}
