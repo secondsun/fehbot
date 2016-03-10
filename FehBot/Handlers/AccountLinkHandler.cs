@@ -2,6 +2,12 @@
 using System.Text.RegularExpressions;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using FehBot.Vo;
+using FehBot.DBUtil;
+using Newtonsoft.Json.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using MongoDB.Bson.IO;
 
 namespace FehBot.Handlers
 {
@@ -22,43 +28,48 @@ namespace FehBot.Handlers
 				var document = getForCode (nick.Trim(), code.Trim(), db);
 				if (document != null) {
 					addListener (document, db);
+					var link = new JObject ();
+
+					link.Add("nick", document.Nick);
+					link.Add("remoteUserName", document.RemoteUserName);	
+
+					callWebHook(db, link);
 				}
 
 			}
 		}
 
-		private void addListener (BsonDocument document, IMongoDatabase db)
+		private void addListener (NickNameLink document, IMongoDatabase db)
 		{
-			var remoteUserName = document.GetValue ("remoteUserName").ToString ();
-			var nick = document.GetValue ("nick").ToString ();
-
-			var links = db.GetCollection<BsonDocument>("Links");
-			var eventUsers = db.GetCollection<BsonDocument>("EventUsers");
-
-			var builder = Builders<BsonDocument>.Filter;
-			var filter = builder.Eq ("nick", document.GetValue("nick").ToString());
-			links.DeleteMany (filter);
-
-			filter = builder.Eq ("nick", document.GetValue ("nick").ToString ()) & builder.Eq ("remoteUserName", document.GetValue ("remoteUserName").ToString ());
-			document = eventUsers.Find(filter).FirstOrDefault();
-
-			if (document == null) {
-				eventUsers.InsertOne (new BsonDocument {
-					{ "nick", nick },
-					{ "remoteUserName", remoteUserName }
-					});
-			} 
+			db.UpdatdeLinkRequestToEventUser (document);
 
 		}
 
-		private BsonDocument getForCode(string nick, string code, IMongoDatabase db)
+		public void callWebHook (IMongoDatabase db, JObject webHookBody)
 		{
-			var links = db.GetCollection<BsonDocument>("Links");
-			var builder = Builders<BsonDocument>.Filter;
-			var filter = builder.Eq ("nick", nick) & builder.Eq ("code", code);
+			db.GetWebHookForAction ("link").ForEach ((hook) => {
+				string apiKey = hook.ApiKey;
+				Uri callbackUrl = new Uri(hook.CallbackUrl);
+				string secret = hook.Secret;
 
-			BsonDocument document = links.Find(filter).FirstOrDefault();
-			return document;
+				using (HttpClient client = new HttpClient ()) {
+					client.DefaultRequestHeaders.Accept.Clear();
+					client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+					webHookBody.Add("apiKey",apiKey);
+					webHookBody.Add("secret",secret);
+					webHookBody.Add("action","link");
+
+					var content = new StringContent(webHookBody.ToString());
+
+					client.PostAsync(callbackUrl, content);
+				}
+			});
+
+		}
+
+		private NickNameLink getForCode(string nick, string code, IMongoDatabase db)
+		{
+			return db.GetNickNameRequest (nick, code);
 
 		}
 

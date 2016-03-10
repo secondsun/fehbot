@@ -12,6 +12,10 @@ namespace FehBot.Handlers
 		{
 			throw new NotImplementedException ();
 		}
+		public void callWebHook (MongoDB.Driver.IMongoDatabase db, Newtonsoft.Json.Linq.JObject webHookBody)
+		{
+			throw new NotImplementedException ();
+		}
 
 	}
 }

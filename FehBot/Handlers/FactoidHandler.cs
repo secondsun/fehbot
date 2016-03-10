@@ -141,6 +141,12 @@ namespace FehBot.Handlers
 		{
 			return FactoidGetExpression.Match (message).Groups [1].ToString();
 		}
+
+		public void callWebHook (IMongoDatabase db, Newtonsoft.Json.Linq.JObject webHookBody)
+		{
+			throw new NotImplementedException ();
+		}
+
 	}
 }
 

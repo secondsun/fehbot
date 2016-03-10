@@ -5,6 +5,7 @@ using System.Linq;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using FehBot.Handlers;
+using System.Threading.Tasks;
 
 namespace FehBot
 {
@@ -109,11 +110,13 @@ namespace FehBot
 				from =(IrcUser) e.Source;
 
 					handlers.ForEach ( handler => {
-					try {
-						handler.handle(infoFactory, client , this, db, from, channel ,e.Text);
-					} catch (Exception ex) {
-						Console.WriteLine(ex);
-					}
+					Task.Run(()=>{
+						try {
+							handler.handle(infoFactory, client , this, db, from, channel ,e.Text);
+						} catch (Exception ex) {
+							Console.WriteLine(ex);
+						}
+						});
 					});
 				
 			} 

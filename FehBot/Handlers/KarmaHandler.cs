@@ -1,10 +1,17 @@
 ﻿using System;
 using FehBot;
+using FehBot.DBUtil;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using MongoDB.Driver;
 using IrcDotNet.Collections;
 using MongoDB.Bson;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
+using FehBot.Vo;
+using MongoDB.Bson.IO;
+using System.Text;
 
 namespace FehBot.Handlers
 {
@@ -39,10 +46,33 @@ namespace FehBot.Handlers
 
 		}
 
-		public void handle (RegistrationInfoFactory infoFactory, IrcDotNet.IrcClient client, FehBot bot, IMongoDatabase db, IrcDotNet.IrcUser from, IrcDotNet.IrcChannel to, string message)
+		public void callWebHook (IMongoDatabase db, JObject webHookBody)
+		{
+			var hooks = db.GetWebHookForAction("karma");
+			hooks.ForEach ((hook) => {
+				string apiKey = hook.ApiKey;
+				Uri callbackUrl = new Uri(hook.CallbackUrl);
+				string secret = hook.Secret;
+				var links = db.GetNickNameLink(webHookBody.GetValue("nick").ToString());
+				links.ForEach(link => {
+					using (HttpClient client = new HttpClient ()) {
+						client.DefaultRequestHeaders.Accept.Clear();
+						client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json")); 
+						webHookBody.Add("userName", link.RemoteUserName);
+						var content = new StringContent(webHookBody.ToString(),Encoding.UTF8, "application/json");
+
+						client.PostAsync(callbackUrl, content).Wait();
+					}
+				});
+
+			});
+
+		}
+
+		public void handle (RegistrationInfoFactory infoFactory, IrcDotNet.IrcClient client, FehBot bot, IMongoDatabase db, IrcDotNet.IrcUser from, IrcDotNet.IrcChannel channel, string message)
 		{
 			Console.WriteLine (message);
-			if (to == null) 
+			if (channel == null) 
 			{
 				return;
 			}
@@ -50,25 +80,20 @@ namespace FehBot.Handlers
 			if (isKarmaRequest(message))
 			{
 				var request = parseKarmaRequest (message);
-				request.Keys.ForEach (key => {
-					var karma = db.GetCollection<BsonDocument>("Karma");
-					var builder = Builders<BsonDocument>.Filter;
-					var filter = builder.Eq("nick", key) & builder.Eq("channel", to.Name.ToLower()) & builder.Eq("network", infoFactory.Server);
-					var document = karma.Find(filter).FirstOrDefault();
-					if (document == null) {
-						karma.InsertOne(new BsonDocument{
-							{"nick", key},
-							{"channel", to.Name.ToLower()},
-							{"network", infoFactory.Server},
-							{"score", 0}
-						});
-						document = karma.Find(filter).FirstOrDefault();
-					}
+				request.Keys.ForEach (nick => {
+					Karma document = db.UpdateKarma(nick, channel.Name, infoFactory.Server, request[nick]);
 
-					var update = Builders<BsonDocument>.Update.Inc("score", request[key]);
-					karma.UpdateOne(filter, update);
-					string template = request[key] > 0 ? "{0} gained a level! (Karma: {1})":"{0} lost a level! (Karma: {1})";
-					client.LocalUser.SendMessage(to, String.Format(template, key, document.GetValue("score").AsInt32 + request[key]));
+					string template = request[nick] > 0 ? "{0} gained a level! (Karma: {1})":"{0} lost a level! (Karma: {1})";
+					client.LocalUser.SendMessage(channel, String.Format(template, nick, document.Score));
+					JObject body = new JObject();
+
+					body.Add("nick",document.Nick);
+					body.Add("from", from.NickName);
+					body.Add("score", document.Score);
+					body.Add("channel", document.Channel);
+					body.Add("direction", request[nick]);
+
+					callWebHook(db, body);
 				});
 
 			}

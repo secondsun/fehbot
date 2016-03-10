@@ -3,6 +3,11 @@ using System.Text.RegularExpressions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Itenso.TimePeriod;
+using Newtonsoft.Json.Linq;
+using FehBot.DBUtil;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace FehBot.Handlers
 {
@@ -31,6 +36,13 @@ namespace FehBot.Handlers
 						{ "message", request.Item2 }
 					});
 					client.LocalUser.SendMessage (to, from.NickName + ": kk");
+					var messageObject = new JObject ();
+
+					messageObject.Add( "channel", to.Name.ToLower () );
+					messageObject.Add( "recipient", request.Item1 );
+					messageObject.Add( "sender", from.NickName );
+					messageObject.Add( "message", request.Item2 );
+					callWebHook (db, messageObject);
 				}
 			} else {
 					var builder = Builders<BsonDocument>.Filter;
@@ -46,6 +58,29 @@ namespace FehBot.Handlers
 
 				}
 
+		}
+
+		public void callWebHook (IMongoDatabase db, Newtonsoft.Json.Linq.JObject webHookBody)
+		{
+			var hooks = db.GetWebHookForAction("tell");
+			hooks.ForEach ((hook) => {
+				string apiKey = hook.ApiKey;
+				Uri callbackUrl = new Uri(hook.CallbackUrl);
+				string secret = hook.Secret;
+				var links = db.GetNickNameLink(webHookBody.GetValue("recipient").ToString());
+				links.ForEach(link => {
+					using (HttpClient client = new HttpClient ()) {
+						client.DefaultRequestHeaders.Accept.Clear();
+						client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json")); 
+						webHookBody.Add("userName", link.RemoteUserName);
+
+						var content = new StringContent(webHookBody.ToString(),Encoding.UTF8, "application/json");
+
+						client.PostAsync(callbackUrl, content).Wait();
+					}
+				});
+
+			});
 		}
 
 		private bool isTellMessage (string message, string nickName)

@@ -63,6 +63,7 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -76,6 +77,9 @@
     <Compile Include="Handlers\HandlerUtils.cs" />
     <Compile Include="REST\RESTServer.cs" />
     <Compile Include="Handlers\AccountLinkHandler.cs" />
+    <Compile Include="Util\DBUtil.cs" />
+    <Compile Include="Util\DuplicateObjectException.cs" />
+    <Compile Include="VO\VOs.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -85,5 +89,7 @@
   <ItemGroup>
     <Folder Include="Handlers\" />
     <Folder Include="REST\" />
+    <Folder Include="Util\" />
+    <Folder Include="VO\" />
   </ItemGroup>
 </Project>
