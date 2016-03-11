@@ -58,7 +58,6 @@ namespace FehBot.Handlers
 					using (HttpClient client = new HttpClient ()) {
 						client.DefaultRequestHeaders.Accept.Clear();
 						client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json")); 
-						webHookBody.Add("userName", link.RemoteUserName);
 						var content = new StringContent(webHookBody.ToString(),Encoding.UTF8, "application/json");
 
 						client.PostAsync(callbackUrl, content).Wait();

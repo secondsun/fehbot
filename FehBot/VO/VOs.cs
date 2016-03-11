@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Linq;
 using MongoDB.Bson;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using IrcDotNet.Collections;
+using Newtonsoft.Json;
 
 namespace FehBot.Vo
 {
@@ -11,6 +15,7 @@ namespace FehBot.Vo
 		public string ApiKey { get; set;}
 		public string CallbackUrl { get; set;}
 		public string Action { get; set;}
+		public List<Tuple<string, string>> Headers { get; set;}
 
 		public WebHook ()
 		{
@@ -24,28 +29,53 @@ namespace FehBot.Vo
 			json.Add("apiKey", ApiKey);
 			json.Add("callbackUrl", CallbackUrl);
 			json.Add("action", Action);
+
+			var headers = new JArray ();
+			Headers.ForEach(header => {
+				JObject item = new JObject();
+				item.Add("header", header.Item1);
+				item.Add("key", header.Item2);
+			});
+
+			json.Add("headers", headers);
 			return json;
 		}
 
 		public BsonDocument ToBSON() {
+
+			var headers = new BsonArray ();
+
+			Headers?.ForEach(header => {
+				headers.Add(new BsonDocument {{"header", header.Item1},{"key", header.Item2}});
+			});
+
+
 			return new BsonDocument {
 				{ "apiKey", ApiKey },
 				{ "action", Action },
 				{ "callbackUrl", CallbackUrl },
-				{ "secret", Secret }
+				{ "secret", Secret },
+				{ "headers", headers }
 			};
 		}
 
+
 		public static WebHook FromJson(string data) {
-			return FromJson (JObject.Parse (data));
+			return FromJson  (JObject.Parse (data));
 		}
 
 		public static WebHook FromJson(JObject data) {
 			var result = new WebHook ();
-			result.Secret = data.GetValue ("secret")?.ToString ();
-			result.Action = data.GetValue ("action")?.ToString ();
-			result.ApiKey = data.GetValue ("apiKey")?.ToString ();
-			result.CallbackUrl = data.GetValue ("callbackUrl")?.ToString ();
+
+			result.Secret = data ["secret"]?.ToString ();
+			result.Action = data["action"]?.ToString();
+			result.ApiKey = data["apiKey"]?.ToString();
+			result.CallbackUrl = data["callbackUrl"]?.ToString();
+
+			if (data ["headers"] != null) {
+				result.Headers = (from header in data ["headers"]
+					select (Tuple.Create (header ["header"].ToString(), header ["key"].ToString()))).ToList();
+			}
 			return result;
 		}
 

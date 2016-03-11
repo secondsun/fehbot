@@ -55,13 +55,20 @@ namespace FehBot.Handlers
 				using (HttpClient client = new HttpClient ()) {
 					client.DefaultRequestHeaders.Accept.Clear();
 					client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
 					webHookBody.Add("apiKey",apiKey);
 					webHookBody.Add("secret",secret);
 					webHookBody.Add("action","link");
 
-					var content = new StringContent(webHookBody.ToString());
+					HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, callbackUrl);
 
-					client.PostAsync(callbackUrl, content);
+					hook.Headers.ForEach (header =>{
+						request.Headers.Add(header.Item1, header.Item2);
+					});
+
+					request.Content = new StringContent(webHookBody.ToString());
+
+					client.SendAsync(request);
 				}
 			});
 
