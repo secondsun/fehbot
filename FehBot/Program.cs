@@ -16,6 +16,7 @@ namespace FehBot
 		private RegistrationInfoFactory infoFactory = new RegistrationInfoFactory();
 		private IMongoDatabase db;
 		private List<IHandler> handlers = new List<IHandler>{new KarmaHandler(), new FactoidHandler(), new TellHandler(), new AccountLinkHandler()};
+		private AutoResetEvent stopWaitHandle = new AutoResetEvent(false);
 
 		public static void Main (string[] args)
 		{
@@ -52,15 +53,13 @@ namespace FehBot
 				if (!connectedEvent.Wait(1000))
 				{
 					client.Dispose();
-					run = false;
+					stopWaitHandle.Set();
 					Console.Error.WriteLine ("Connection Timeout");
 					return;
 				}
 			}
 
-			while (run) {
-				
-			}
+			stopWaitHandle.WaitOne ();
 		}
 
 		private void Connected(object client, EventArgs e)
@@ -70,7 +69,7 @@ namespace FehBot
 
 		private void Disconnected(object client, EventArgs e)
 		{
-			run = false;
+			stopWaitHandle.Set();
 		}
 
 		private void Registered(object _client, EventArgs e)

@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using MongoDB.Bson;
 using FehBot.Vo;
 using FehBot.DBUtil;
+using System.Threading;
 
 namespace FehBot
 {
@@ -14,6 +15,7 @@ namespace FehBot
 		private readonly IMongoDatabase db;
 		private readonly string LinkIRCNickToUserIdPrefix;
 		private readonly string WebHookRegistrationPrefix;
+		private AutoResetEvent requestComplete = new AutoResetEvent(false);
 
 		public RESTServer (IMongoDatabase db, int port) 
 		{
@@ -25,6 +27,7 @@ namespace FehBot
 		}
 
 		public void StopListening() {
+			requestComplete.Set ();
 			listening = false;
 		}
 
@@ -39,8 +42,9 @@ namespace FehBot
 
 			while (listening) {
 				var result = listener.BeginGetContext (new AsyncCallback(HandleRequest),listener);
+				requestComplete = new AutoResetEvent(false);
 				while (listening && !result.IsCompleted) {
-					//loop
+					requestComplete.WaitOne ();
 				}
 			}
 
@@ -72,7 +76,7 @@ namespace FehBot
 			}  catch (Exception ex) {
 				Console.Write(ex);
 			} finally {
-
+				requestComplete.Set ();
 				response.Close ();
 			}
 		}
@@ -157,12 +161,13 @@ namespace FehBot
 		{
 			string responseString = body.ToString ();
 			byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+			response.StatusCode = status;
 			response.ContentLength64 = buffer.Length;
 			System.IO.Stream output = response.OutputStream;
 			output.Write(buffer,0,buffer.Length);
 			output.Close();
 
-			response.StatusCode = status;
+
 		}
 
 		void SendUnsupportedMethod (HttpListenerResponse response)
@@ -174,6 +179,7 @@ namespace FehBot
 		{
 			JObject responseObject = new JObject ();
 			responseObject.Add ("message", message);
+			response.StatusCode = status;
 			string responseString = responseObject.ToString ();
 			byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
 			response.ContentLength64 = buffer.Length;
@@ -181,7 +187,7 @@ namespace FehBot
 			output.Write(buffer,0,buffer.Length);
 			output.Close();
 
-			response.StatusCode = status;
+
 		}
 	}
 }

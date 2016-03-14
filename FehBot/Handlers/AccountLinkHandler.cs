@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using MongoDB.Bson.IO;
+using System.Text;
 
 namespace FehBot.Handlers
 {
@@ -59,16 +60,14 @@ namespace FehBot.Handlers
 					webHookBody.Add("apiKey",apiKey);
 					webHookBody.Add("secret",secret);
 					webHookBody.Add("action","link");
+					Console.Out.WriteLine("Posting request, maybe");
+					client.DefaultRequestHeaders.Accept.Clear();
+					client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json")); 
+					var content = new StringContent(webHookBody.ToString(),Encoding.UTF8, "application/json");
 
-					HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, callbackUrl);
 
-					hook.Headers.ForEach (header =>{
-						request.Headers.Add(header.Item1, header.Item2);
-					});
 
-					request.Content = new StringContent(webHookBody.ToString());
-
-					client.SendAsync(request);
+					client.PostAsync(callbackUrl, content).Wait();
 				}
 			});
 
