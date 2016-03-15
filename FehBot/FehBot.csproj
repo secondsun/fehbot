@@ -18,6 +18,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="FEHBOT_CHANNELS" value="#aerobot-test,#aerogear,#feedhenry,#mobile-internal" />
+        <Variable name="FEHBOT_NICKSERV_PASSWORD" value="test" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
@@ -80,6 +86,7 @@
     <Compile Include="Util\DBUtil.cs" />
     <Compile Include="Util\DuplicateObjectException.cs" />
     <Compile Include="VO\VOs.cs" />
+    <Compile Include="NickServ.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

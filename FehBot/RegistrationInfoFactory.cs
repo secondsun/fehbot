@@ -74,8 +74,9 @@ namespace FehBot
 			nickName = Environment.GetEnvironmentVariable (FEHBOT_IRC_NICKNAME_KEY) ?? "fehbot";
 			userName = Environment.GetEnvironmentVariable (FEHBOT_IRC_USERNAME_KEY) ?? "fehbot";
 			server = Environment.GetEnvironmentVariable (FEHBOT_IRC_SERVER_KEY) ?? "irc.freenode.net";
+			channels = (Environment.GetEnvironmentVariable (FEHBOT_CHANNELS_KEY) ?? "#aerobot-test").Split(',');
 			password = Environment.GetEnvironmentVariable (FEHBOT_IRC_NICKSERV_PASSWORD_KEY) ?? "";
-			channels = (Environment.GetEnvironmentVariable (FEHBOT_IRC_NICKSERV_PASSWORD_KEY) ?? "#aerobot-test").Split(',');
+
 
 		}
 	}

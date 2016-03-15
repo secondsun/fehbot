@@ -32,6 +32,11 @@ namespace FehBot
 			client.Connected += Connected;
 			client.Registered += Registered;
 			client.Disconnected += Disconnected;
+			client.RawMessageReceived += (object sender, IrcRawMessageEventArgs e) => {
+				if (e.RawContent.Contains("NickServ") && e.RawContent.Contains("You are now identified for")) {
+					client.Channels.Join (infoFactory.Channels);					
+				}
+			};
 
 			var mongo = new MongoClient();
 			db = mongo.GetDatabase("fehBot");
@@ -50,7 +55,8 @@ namespace FehBot
 				var registrationInfo = infoFactory.Registration;
 
 				client.Connect(infoFactory.Server, false, registrationInfo);
-				if (!connectedEvent.Wait(1000))
+
+				if (!connectedEvent.Wait(10000))
 				{
 					client.Dispose();
 					stopWaitHandle.Set();
@@ -64,7 +70,11 @@ namespace FehBot
 
 		private void Connected(object client, EventArgs e)
 		{
-			
+			Console.WriteLine ("Connected");
+			if (infoFactory.NickServPassword.Length > 0) {
+				Console.WriteLine ("/msg NickServ IDENTIFY " + infoFactory.NickServPassword);
+				((IrcClient)client).LocalUser.SendMessage(new NickServ(), "IDENTIFY " + infoFactory.NickServPassword);
+			}
 		}
 
 		private void Disconnected(object client, EventArgs e)
@@ -86,6 +96,7 @@ namespace FehBot
 			var client = e2.Channel.Client;
 			var channel = e2.Channel;
 			channel.MessageReceived += HandleMessage;
+
 			client.LocalUser.SendMessage(channel, "Hello World!");
 
 
