@@ -54,10 +54,12 @@ namespace FehBot.Handlers
 				Uri callbackUrl = new Uri(hook.CallbackUrl);
 				string secret = hook.Secret;
 				var links = db.GetNickNameLink(webHookBody.GetValue("nick").ToString());
+				Console.WriteLine("Found " + links.Count + " links");
 				links.ForEach(link => {
 					using (HttpClient client = new HttpClient ()) {
 						client.DefaultRequestHeaders.Accept.Clear();
 						client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json")); 
+						webHookBody["remoteUserName"] = link.RemoteUserName;
 						var content = new StringContent(webHookBody.ToString(),Encoding.UTF8, "application/json");
 
 						client.PostAsync(callbackUrl, content).Wait();
@@ -91,7 +93,6 @@ namespace FehBot.Handlers
 					body.Add("score", document.Score);
 					body.Add("channel", document.Channel);
 					body.Add("direction", request[nick]);
-
 					callWebHook(db, body);
 				});
 

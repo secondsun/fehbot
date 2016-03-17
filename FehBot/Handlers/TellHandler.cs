@@ -60,7 +60,7 @@ namespace FehBot.Handlers
 
 		}
 
-		public void callWebHook (IMongoDatabase db, Newtonsoft.Json.Linq.JObject webHookBody)
+		public void callWebHook (IMongoDatabase db, JObject webHookBody)
 		{
 			var hooks = db.GetWebHookForAction("tell");
 			hooks.ForEach ((hook) => {
@@ -72,8 +72,9 @@ namespace FehBot.Handlers
 					using (HttpClient client = new HttpClient ()) {
 						client.DefaultRequestHeaders.Accept.Clear();
 						client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json")); 
-						webHookBody.Add("userName", link.RemoteUserName);
 
+						webHookBody["remoteUserName"] = link.RemoteUserName;
+							
 						var content = new StringContent(webHookBody.ToString(),Encoding.UTF8, "application/json");
 
 						client.PostAsync(callbackUrl, content).Wait();
