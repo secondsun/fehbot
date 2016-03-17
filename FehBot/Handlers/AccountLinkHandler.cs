@@ -14,7 +14,7 @@ namespace FehBot.Handlers
 {
 	public class AccountLinkHandler : IHandler
 	{
-		private readonly Regex CodeGetExpression = new Regex(@"^\?code (\d\d\d\d\d\d\d\d)$");
+		private readonly Regex CodeGetExpression = new Regex(@"^\?code (\d{8})$");
 
 		public AccountLinkHandler ()
 		{
