@@ -72,7 +72,7 @@ namespace FehBot.Handlers
 
 		public void handle (RegistrationInfoFactory infoFactory, IrcDotNet.IrcClient client, FehBot bot, IMongoDatabase db, IrcDotNet.IrcUser from, IrcDotNet.IrcChannel channel, string message)
 		{
-			Console.WriteLine (message);
+			
 			if (channel == null) 
 			{
 				return;
