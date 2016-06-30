@@ -59,8 +59,6 @@ namespace FehBot
 			HttpListenerRequest request = context.Request;
 			HttpListenerResponse response = context.Response;
 
-			string url = request.Url.ToString();
-
 			try {
 			switch (request.Url.AbsolutePath) {
 			case "/link":
