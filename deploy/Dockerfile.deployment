@@ -1,0 +1,12 @@
+FROM fedora:27
+RUN dnf -y install mono-devel git
+RUN dnf -y install nuget
+RUN mozroots --import --sync
+RUN cert-sync /etc/pki/tls/certs/ca-bundle.crt
+VOLUME /src
+WORKDIR /src
+RUN git clone https://github.com/secondsun/fehbot
+WORKDIR /src/FehBot
+RUN  curl -f -k -L -o NuGet.Restore.targets http://bit.ly/nugetore 
+RUN xbuild NuGet.Restore.targets /t:Init
+RUN xbuild
