@@ -5,6 +5,5 @@ RUN mozroots --import --sync
 RUN cert-sync /etc/pki/tls/certs/ca-bundle.crt
 VOLUME /src
 WORKDIR /src
-WORKDIR /src/FehBot
 # Run  curl -f -k -L -o NuGet.Restore.targets http://bit.ly/nugetore and then xbuild NuGet.Restore.targets /t:Init
 # now xbuild will work
