@@ -17,7 +17,7 @@ namespace FehBot.Handlers
 {
 	public class KarmaHandler : IHandler
 	{
-	    private readonly Regex karmaRe = new Regex(@"(\w+)([+]{2}|[-]{2})");
+	    private readonly Regex karmaRe = new Regex(@"(\w+) ?([+]{2}|[-]{2})");
 
 		public KarmaHandler ()
 		{
